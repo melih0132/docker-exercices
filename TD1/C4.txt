@@ -1,0 +1,21 @@
+## Créer une volume
+docker volume create <VOLUME NAME>
+
+# Lister les volumes
+docker volume ls
+
+## Supprimer un ou plusieurs volume(s)
+docker volume rm <VOLUME NAME>
+    -f ou --force : forcer la suppression
+
+## Récolter des informations sur une volume
+docker volume inspect <VOLUME NAME>
+
+## Supprimer tous les volumes locaux inutilisés
+docker volume prune
+    -f ou --force : forcer la suppression
+
+## Supprimer un conteneur Docker avec le/les volumes associés
+docker rm -v <CONTAINER_ID ou CONTAINER_NAME>
+    -f ou --force : forcer la suppression
+    -v ou --volume : supprime les volumes associés au conteneur
