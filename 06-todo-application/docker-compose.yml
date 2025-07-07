@@ -1,10 +1,11 @@
-version: '3'
+version: '3.8'
+
 services:
   web:
     image: php:8.1-fpm
     container_name: php-container
     volumes:
-      - ./app:/var/www/html
+      - ./src:/var/www/html
     networks:
       - app-network
     depends_on:
@@ -12,12 +13,13 @@ services:
       - redis
     working_dir: /var/www/html
     command: bash -c "composer install && php-fpm"
+    restart: unless-stopped
   
   nginx:
-    image: nginx:latest
+    image: nginx:alpine
     container_name: nginx-container
     volumes:
-      - ./app:/var/www/html
+      - ./src:/var/www/html
       - ./nginx.conf:/etc/nginx/nginx.conf
     ports:
       - "8080:80"
@@ -25,6 +27,7 @@ services:
       - web
     networks:
       - app-network
+    restart: unless-stopped
 
   mariadb:
     image: mariadb:10.5
@@ -32,27 +35,39 @@ services:
     environment:
       MYSQL_ROOT_PASSWORD: root
       MARIADB_DATABASE: app_db
+      MARIADB_USER: app_user
+      MARIADB_PASSWORD: app_password
     volumes:
       - mariadb-data:/var/lib/mysql
+    ports:
+      - "3306:3306"
     networks:
       - app-network
+    restart: unless-stopped
 
   postgres:
-    image: postgres:13
+    image: postgres:15
     container_name: postgres-container
     environment:
       POSTGRES_PASSWORD: root
       POSTGRES_DB: app_db
+      POSTGRES_USER: app_user
     volumes:
       - postgres-data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
     networks:
       - app-network
+    restart: unless-stopped
 
   redis:
-    image: redis:latest
+    image: redis:7-alpine
     container_name: redis-container
+    ports:
+      - "6379:6379"
     networks:
       - app-network
+    restart: unless-stopped
 
 networks:
   app-network:

@@ -1,0 +1,53 @@
+version: '3.8'
+
+services:
+  web:
+    build: .
+    container_name: php-apache-app
+    ports:
+      - "8081:80"  # Map host port 8081 to container port 80
+    volumes:
+      - .:/var/www/html  # Mount current directory to /var/www/html in container
+    networks:
+      - app-network  # Declare network for service communication
+    restart: unless-stopped
+
+  mariadb:
+    image: mariadb:10.5
+    container_name: mariadb-db
+    environment:
+      MYSQL_ROOT_PASSWORD: root  # Root password for database
+      MARIADB_DATABASE: mydb  # Create database "mydb" on startup
+      MARIADB_USER: app_user
+      MARIADB_PASSWORD: app_password
+    volumes:
+      - mariadb-data:/var/lib/mysql  # Persist database data
+    ports:
+      - "3306:3306"
+    networks:
+      - app-network  # Use same network to communicate with web service
+    restart: unless-stopped
+
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin:latest
+    container_name: phpmyadmin
+    environment:
+      PMA_HOST: mariadb  # Specify that phpMyAdmin should connect to mariadb service
+      PMA_PORT: 3306  # Default MariaDB port
+      PMA_USER: root
+      PMA_PASSWORD: root
+    ports:
+      - "8082:80"  # Map host port 8082 to container port 80
+    depends_on:
+      - mariadb
+    networks:
+      - app-network  # Use same network to communicate with other services
+    restart: unless-stopped
+
+networks:
+  app-network:
+    driver: bridge  # Define virtual network for service communication
+
+volumes:
+  mariadb-data:
+    driver: local  # Create local volume to store database data
